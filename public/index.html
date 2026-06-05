@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>WebP Converter</title>
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+
+      font-family:'Inter',sans-serif;
+
+      background:
+        radial-gradient(
+          circle at top,
+          #1e3a8a,
+          #0f172a 45%,
+          #020617 100%
+        );
+
+      min-height:100vh;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      padding:20px;
+
+      overflow:hidden;
+    }
+
+    .converter-box{
+
+      width:100%;
+      max-width:540px;
+
+      background:
+        rgba(17,25,40,0.78);
+
+      backdrop-filter:blur(28px);
+
+      border:
+        1px solid rgba(255,255,255,0.08);
+
+      border-radius:28px;
+
+      padding:32px;
+
+      box-shadow:
+        0 25px 60px rgba(0,0,0,0.45);
+
+      color:white;
+
+      position:relative;
+
+      overflow:hidden;
+    }
+
+    .converter-box::before{
+
+      content:"";
+
+      position:absolute;
+
+      width:220px;
+      height:220px;
+
+      background:
+        rgba(59,130,246,0.15);
+
+      filter:blur(80px);
+
+      border-radius:50%;
+
+      top:-80px;
+      right:-80px;
+    }
+
+    .top-title{
+      text-align:center;
+      margin-bottom:28px;
+      position:relative;
+      z-index:2;
+    }
+
+    .top-title h1{
+
+      font-size:42px;
+      font-weight:800;
+
+      margin-bottom:12px;
+
+      letter-spacing:-1px;
+    }
+
+    .top-title p{
+
+      color:#cbd5e1;
+
+      line-height:1.7;
+
+      font-size:15px;
+    }
+
+    .upload-area{
+
+      border:
+        2px dashed rgba(255,255,255,0.15);
+
+      border-radius:24px;
+
+      min-height:300px;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+
+      text-align:center;
+
+      cursor:pointer;
+
+      transition:0.3s ease;
+
+      background:
+        rgba(255,255,255,0.03);
+
+      position:relative;
+
+      overflow:hidden;
+    }
+
+    .upload-area:hover{
+
+      border-color:#38bdf8;
+
+      background:
+        rgba(56,189,248,0.08);
+
+      transform:translateY(-2px);
+    }
+
+    .upload-area.active{
+
+      border-color:#38bdf8;
+
+      background:
+        rgba(56,189,248,0.08);
+    }
+
+    .upload-icon{
+
+      font-size:72px;
+
+      margin-bottom:20px;
+    }
+
+    .upload-title{
+
+      font-size:24px;
+
+      font-weight:700;
+
+      margin-bottom:10px;
+    }
+
+    .upload-subtitle{
+
+      color:#94a3b8;
+
+      font-size:15px;
+    }
+
+    input[type="file"]{
+      display:none;
+    }
+
+    .preview-container{
+      display:none;
+    }
+
+    .image-wrapper{
+
+      position:relative;
+
+      border-radius:24px;
+
+      overflow:hidden;
+    }
+
+    #preview{
+
+      width:100%;
+
+      height:340px;
+
+      object-fit:cover;
+
+      display:block;
+
+      border-radius:24px;
+
+      background:#0f172a;
+    }
+
+    .remove-btn{
+
+      position:absolute;
+
+      top:14px;
+      right:14px;
+
+      width:44px;
+      height:44px;
+
+      border:none;
+
+      border-radius:50%;
+
+      background:
+        rgba(0,0,0,0.65);
+
+      color:white;
+
+      font-size:18px;
+
+      cursor:pointer;
+
+      transition:0.3s;
+    }
+
+    .remove-btn:hover{
+
+      background:#ef4444;
+
+      transform:scale(1.08);
+    }
+
+    .file-info{
+
+      margin-top:16px;
+
+      background:
+        rgba(255,255,255,0.05);
+
+      border:
+        1px solid rgba(255,255,255,0.06);
+
+      border-radius:16px;
+
+      padding:16px;
+
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+
+      gap:10px;
+    }
+
+    .file-name{
+
+      overflow:hidden;
+
+      white-space:nowrap;
+
+      text-overflow:ellipsis;
+
+      max-width:250px;
+
+      color:#f1f5f9;
+
+      font-size:14px;
+    }
+
+    .file-size{
+
+      color:#38bdf8;
+
+      font-weight:700;
+
+      font-size:14px;
+    }
+
+    .action-buttons{
+
+      margin-top:24px;
+
+      display:flex;
+
+      gap:14px;
+    }
+
+    .action-buttons button,
+    .action-buttons a.show{
+
+      flex:1;
+
+      height:58px;
+
+      border:none;
+
+      border-radius:16px;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      text-decoration:none;
+
+      font-size:16px;
+
+      font-weight:700;
+
+      cursor:pointer;
+
+      transition:0.3s;
+    }
+
+    .convert-btn{
+
+      background:
+        linear-gradient(
+          135deg,
+          #0ea5e9,
+          #2563eb
+        );
+
+      color:white;
+
+      box-shadow:
+        0 12px 25px rgba(37,99,235,0.35);
+    }
+
+    .convert-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .convert-btn:disabled{
+
+      opacity:0.7;
+
+      cursor:not-allowed;
+    }
+
+    .download-btn{
+
+      background:
+        linear-gradient(
+          135deg,
+          #10b981,
+          #059669
+        );
+
+      color:white;
+
+      display:none;
+
+      box-shadow:
+        0 12px 25px rgba(5,150,105,0.35);
+    }
+
+    .download-btn.show{
+      display:flex;
+    }
+
+    .download-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .bottom-note{
+
+      margin-top:24px;
+
+      text-align:center;
+
+      color:#94a3b8;
+
+      font-size:14px;
+
+      line-height:1.7;
+    }
+
+    @media(max-width:600px){
+
+      body{
+        padding:14px;
+      }
+
+      .converter-box{
+        padding:22px;
+      }
+
+      .top-title h1{
+        font-size:34px;
+      }
+
+      .upload-area{
+        min-height:240px;
+      }
+
+      #preview{
+        height:240px;
+      }
+
+      .action-buttons{
+        flex-direction:column;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="converter-box">
+
+    <div class="top-title">
+
+      <h1>
+        WebP Converter
+      </h1>
+
+      <p>
+        Convert JPG, PNG & JPEG images
+        into optimized high-quality WebP
+        instantly.
+      </p>
+
+    </div>
+
+    <label
+      class="upload-area"
+      for="imageInput"
+    >
+
+      <div class="upload-icon">
+        📸
+      </div>
+
+      <div class="upload-title">
+        Upload Your Image
+      </div>
+
+      <div class="upload-subtitle">
+        Drag & Drop or Click to Browse
+      </div>
+
+    </label>
+
+    <input
+      type="file"
+      id="imageInput"
+      accept="image/*"
+    />
+
+    <div
+      class="preview-container"
+      id="previewContainer"
+    >
+
+      <div class="image-wrapper">
+
+        <img id="preview" />
+
+        <button
+          class="remove-btn"
+          id="removeBtn"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div class="file-info">
+
+        <div
+          class="file-name"
+          id="fileName"
+        >
+        </div>
+
+        <div
+          class="file-size"
+          id="fileSize"
+        >
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="action-buttons">
+
+      <button
+        class="convert-btn"
+        id="convertBtn"
+      >
+        Convert To WebP
+      </button>
+
+      <a
+        class="download-btn"
+        id="downloadBtn"
+        download="converted.webp"
+      >
+        Download WebP
+      </a>
+
+    </div>
+
+    <div class="bottom-note">
+      Fast • High Quality • Optimized Size
+    </div>
+
+  </div>
+
+  <script>
+
+    const imageInput =
+      document.getElementById(
+        "imageInput"
+      );
+
+    const uploadArea =
+      document.querySelector(
+        ".upload-area"
+      );
+
+    const preview =
+      document.getElementById(
+        "preview"
+      );
+
+    const previewContainer =
+      document.getElementById(
+        "previewContainer"
+      );
+
+    const fileName =
+      document.getElementById(
+        "fileName"
+      );
+
+    const fileSize =
+      document.getElementById(
+        "fileSize"
+      );
+
+    const removeBtn =
+      document.getElementById(
+        "removeBtn"
+      );
+
+    const convertBtn =
+      document.getElementById(
+        "convertBtn"
+      );
+
+    const downloadBtn =
+      document.getElementById(
+        "downloadBtn"
+      );
+
+    let selectedFile = null;
+
+    function showPreview(file){
+
+      selectedFile = file;
+
+      preview.src =
+        URL.createObjectURL(file);
+
+      previewContainer.style.display =
+        "block";
+
+      uploadArea.style.display =
+        "none";
+
+      fileName.innerText =
+        file.name;
+
+      fileSize.innerText =
+        (
+          file.size / 1024 / 1024
+        ).toFixed(2) + " MB";
+    }
+
+    imageInput.addEventListener(
+      "change",
+      () => {
+
+      const file =
+        imageInput.files[0];
+
+      if(!file) return;
+
+      showPreview(file);
+
+    });
+
+    removeBtn.addEventListener(
+      "click",
+      () => {
+
+      selectedFile = null;
+
+      imageInput.value = "";
+
+      preview.src = "";
+
+      previewContainer.style.display =
+        "none";
+
+      uploadArea.style.display =
+        "flex";
+
+      downloadBtn.classList.remove(
+        "show"
+      );
+
+    });
+
+    convertBtn.addEventListener(
+      "click",
+      async () => {
+
+      if(!selectedFile){
+
+        alert(
+          "Please upload image first"
+        );
+
+        return;
+      }
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "image",
+        selectedFile
+      );
+
+      convertBtn.innerText =
+        "Converting...";
+
+      convertBtn.disabled = true;
+
+      try{
+
+        const response =
+          await fetch("/convert",{
+            method:"POST",
+            body:formData
+          });
+
+        const blob =
+          await response.blob();
+
+        const url =
+          URL.createObjectURL(blob);
+
+        preview.src = url;
+
+        downloadBtn.href = url;
+
+        downloadBtn.classList.add(
+          "show"
+        );
+
+      }catch(error){
+
+        console.log(error);
+
+        alert(
+          "Conversion failed"
+        );
+      }
+
+      convertBtn.innerText =
+        "Convert To WebP";
+
+      convertBtn.disabled = false;
+
+    });
+
+    uploadArea.addEventListener(
+      "dragover",
+      (e) => {
+
+      e.preventDefault();
+
+      uploadArea.classList.add(
+        "active"
+      );
+
+    });
+
+    uploadArea.addEventListener(
+      "dragleave",
+      () => {
+
+      uploadArea.classList.remove(
+        "active"
+      );
+
+    });
+
+    uploadArea.addEventListener(
+      "drop",
+      (e) => {
+
+      e.preventDefault();
+
+      uploadArea.classList.remove(
+        "active"
+      );
+
+      const file =
+        e.dataTransfer.files[0];
+
+      if(file){
+
+        imageInput.files =
+          e.dataTransfer.files;
+
+        showPreview(file);
+      }
+
+    });
+
+  </script>
+
+</body>
+
+</html>
