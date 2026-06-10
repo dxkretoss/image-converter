@@ -6,12 +6,14 @@ const app = express();
 
 app.use(express.static("public"));
 
-/* MEMORY STORAGE = MUCH FASTER */
 const upload = multer({
   storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+  },
 });
 
-/* Convert API */
 app.post(
   "/convert",
   upload.single("image"),
@@ -20,15 +22,39 @@ app.post(
       if (!req.file) {
         return res.status(400).json({
           success: false,
+          message: "No image uploaded",
         });
       }
 
-      /* Convert directly from buffer */
-      const webpBuffer = await sharp(req.file.buffer)
+      const image = sharp(req.file.buffer, {
+        limitInputPixels: false,
+      });
+
+      const metadata = await image.metadata();
+
+      let width = metadata.width;
+      let height = metadata.height;
+
+      console.log("Original:", width, height);
+
+      /* ONLY resize if dimensions are extremely huge */
+      const MAX_SIZE = 8000;
+
+      if (width > MAX_SIZE || height > MAX_SIZE) {
+        image.resize({
+          width: MAX_SIZE,
+          height: MAX_SIZE,
+          fit: "inside",
+          withoutEnlargement: true,
+        });
+      }
+
+      const webpBuffer = await image
         .webp({
           quality: 100,
-  effort: 0,
-  smartSubsample: true
+          lossless: false,
+          nearLossless: true,
+          effort: 6,
         })
         .toBuffer();
 
@@ -45,13 +71,12 @@ app.post(
 
       res.status(500).json({
         success: false,
+        message: error.message,
       });
     }
   }
 );
 
 app.listen(3000, () => {
-  console.log(
-    "Server running on http://localhost:3000"
-  );
+  console.log("Server running on http://localhost:3000");
 });
